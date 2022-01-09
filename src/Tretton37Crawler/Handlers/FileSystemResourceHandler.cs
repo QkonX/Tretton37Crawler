@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Tretton37Crawler.Helpers;
 
 namespace Tretton37Crawler.Handlers;
@@ -15,7 +16,7 @@ public class FileSystemResourceHandler : IResourceHandler
 
     public async Task Process(string destinationFolderPath, Uri uri, byte[] content)
     {
-        var relativeUrl = uri.AbsolutePath;
+        var relativeUrl = uri.PathAndQuery;
 
         if (relativeUrl == "/")
         {
@@ -27,7 +28,13 @@ public class FileSystemResourceHandler : IResourceHandler
             relativeUrl += ".html";
         }
 
-        var finalPath = Path.Join(destinationFolderPath, relativeUrl);
+        var relativeFilePath = Path.GetFileName(relativeUrl);
+        var relativeDirectoryPath = Path.GetDirectoryName(relativeUrl);
+
+        relativeDirectoryPath = string.Join('_', relativeDirectoryPath!.Split(Path.GetInvalidPathChars()));
+        relativeFilePath = string.Join('_', relativeFilePath.Split(Path.GetInvalidFileNameChars()));
+
+        var finalPath = Path.Join(destinationFolderPath, relativeDirectoryPath, relativeFilePath);
 
         try
         {

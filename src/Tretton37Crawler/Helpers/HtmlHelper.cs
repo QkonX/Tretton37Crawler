@@ -5,7 +5,7 @@ namespace Tretton37Crawler.Helpers;
 
 internal static class HtmlHelper
 {
-    public static IEnumerable<string> ExtractUrls(byte[] content)
+    public static IEnumerable<string> ExtractUrls(string domain, byte[] content)
     {
         var responseString = Encoding.UTF8.GetString(content);
 
@@ -24,19 +24,22 @@ internal static class HtmlHelper
 
             var url = matchGroup.Value;
 
+            if (!IsValidUrl(url))
+            {
+                continue;
+            }
+
+            if (!IsInternalUrl(domain, url))
+            {
+                continue;
+            }
+
+            FixStartingDirectorySeparator(ref url);
+            RemoveResourceFileCacheQueryString(ref url);
+
             if (result.Contains(url))
             {
                 continue;
-            }
-
-            if (!IsInternalUrl(url))
-            {
-                continue;
-            }
-
-            if (url.StartsWith('.'))
-            {
-                url = "/" + url;
             }
 
             result.Add(url);
@@ -45,8 +48,46 @@ internal static class HtmlHelper
         return result;
     }
 
-    private static bool IsInternalUrl(string url)
+    private static void FixStartingDirectorySeparator(ref string url)
     {
-        return url.StartsWith('/') || url.StartsWith('.');
+        if (url.StartsWith('/'))
+        {
+            return;
+        }
+
+        url = "/" + url;
+    }
+
+    private static void RemoveResourceFileCacheQueryString(ref string url)
+    {
+        if (!url.Contains('?'))
+        {
+            return;
+        }
+
+        var path = url.Split('?')[0];
+        var extension = Path.GetExtension(path);
+
+        if (extension is ".css" or ".js")
+        {
+            url = path;
+        }
+    }
+
+    private static bool IsValidUrl(string url)
+    {
+        return
+            !string.IsNullOrEmpty(url) &&
+            !string.IsNullOrWhiteSpace(url) &&
+            !url.StartsWith('#') &&
+            !url.StartsWith("//") &&
+            !url.StartsWith("javascript") &&
+            !url.StartsWith("mailto") &&
+            !url.StartsWith("tel");
+    }
+
+    private static bool IsInternalUrl(string domain, string url)
+    {
+        return !url.StartsWith("http") || url.Contains(domain);
     }
 }

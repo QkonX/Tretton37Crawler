@@ -56,7 +56,7 @@ public class CrawlerService : ICrawlerService
 
         await _resourceHandler.Process(_downloadPath!, requestUri, content);
 
-        var extractedUrls = HtmlHelper.ExtractUrls(content);
+        var extractedUrls = HtmlHelper.ExtractUrls(_domain!, content);
 
         foreach (var extractedUrl in extractedUrls)
         {
