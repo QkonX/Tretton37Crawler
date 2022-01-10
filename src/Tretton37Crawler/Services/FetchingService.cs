@@ -17,7 +17,7 @@ public class FetchingService : IFetchingService
 
     public async Task<byte[]?> Fetch(Uri requestUri)
     {
-        _logger.LogInformation("Downloading starting: {RelativeUrl}", requestUri.AbsolutePath);
+        _logger.LogInformation("Downloading is starting: {RelativeUrl}", requestUri.AbsolutePath);
 
         try
         {
@@ -28,7 +28,7 @@ public class FetchingService : IFetchingService
                 return null;
             }
 
-            _logger.LogInformation("Successfully downloaded: {RelativeUrl} ({size} bytes)",
+            _logger.LogInformation("Successfully downloaded: {RelativeUrl} ({Size} bytes)",
                 requestUri.AbsolutePath, responseMessage.Content.Headers.ContentLength);
 
             return await responseMessage.Content.ReadAsByteArrayAsync();

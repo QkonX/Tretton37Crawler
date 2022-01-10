@@ -17,4 +17,9 @@ internal static class DirectoryHelper
             Directory.Delete(path, true);
         }
     }
+
+    public static string ReplaceInvalidDirectoryNameChars(this string directoryName, char replacement = '_')
+    {
+        return string.Join(replacement, directoryName.Split(Path.GetInvalidPathChars()));
+    }
 }

@@ -26,9 +26,12 @@ public class CrawlerService : ICrawlerService
     public async Task Download(string domain)
     {
         _domain = domain ?? throw new ArgumentNullException(nameof(domain));
-        _downloadPath = Path.Combine(Directory.GetCurrentDirectory(), new Uri(domain).Host.Replace('.', '_'));
 
-        _logger.LogInformation("Downloading starting for {Domain}", domain);
+        _downloadPath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            UrlExtensions.ConvertDomainToFolderName(domain));
+
+        _logger.LogInformation("Downloading is starting for {Domain}", domain);
 
         DirectoryHelper.DeleteDirectoryIfExists(_downloadPath);
 
@@ -56,9 +59,7 @@ public class CrawlerService : ICrawlerService
 
         await _resourceHandler.Process(_downloadPath!, requestUri, content);
 
-        var extractedUrls = HtmlHelper.ExtractUrls(_domain!, content);
-
-        foreach (var extractedUrl in extractedUrls)
+        foreach (var extractedUrl in HtmlHelper.ExtractUrls(_domain!, content))
         {
             await DownloadRecursively(visitedUrls, extractedUrl);
         }

@@ -7,71 +7,44 @@ internal static class HtmlHelper
 {
     public static IEnumerable<string> ExtractUrls(string domain, byte[] content)
     {
-        var responseString = Encoding.UTF8.GetString(content);
-
-        const string pattern = @"href=[\'""]?([^\'"" >]+)";
-
-        var result = new HashSet<string>();
-
-        foreach (Match match in Regex.Matches(responseString, pattern))
-        {
-            var matchGroup = match.Groups[1];
-
-            if (!matchGroup.Success)
-            {
-                continue;
-            }
-
-            var url = matchGroup.Value;
-
-            if (!IsValidUrl(url))
-            {
-                continue;
-            }
-
-            if (!IsInternalUrl(domain, url))
-            {
-                continue;
-            }
-
-            FixStartingDirectorySeparator(ref url);
-            RemoveResourceFileCacheQueryString(ref url);
-
-            if (result.Contains(url))
-            {
-                continue;
-            }
-
-            result.Add(url);
-        }
-
-        return result;
+        return Regex.Matches(Encoding.UTF8.GetString(content), @"href=[\'""]?([^\'"" >]+)")
+            .Select(x => x.Groups[1])
+            .Where(x => x.Success)
+            .Select(x => x.Value)
+            .Where(IsValidUrl)
+            .Where(x => IsInternalUrl(domain, x))
+            .Select(NormalizeDirectorySeparators)
+            .Select(FixStartingDirectorySeparator)
+            .Select(RemoveResourceFileQueryString)
+            .Distinct();
     }
 
-    private static void FixStartingDirectorySeparator(ref string url)
+    private static string NormalizeDirectorySeparators(string url)
     {
-        if (url.StartsWith('/'))
-        {
-            return;
-        }
-
-        url = "/" + url;
+        return url.Replace('\\', '/');
     }
 
-    private static void RemoveResourceFileCacheQueryString(ref string url)
+    private static string FixStartingDirectorySeparator(string url)
+    {
+        return url.StartsWith('/') ? url : "/" + url;
+    }
+
+    private static string RemoveRelativeUrl(string url)
+    {
+        return url.Contains('#') ? url.Split('#')[0] : url;
+    }
+    
+    private static string RemoveResourceFileQueryString(string url)
     {
         if (!url.Contains('?'))
         {
-            return;
+            return url;
         }
 
         var path = url.Split('?')[0];
         var extension = Path.GetExtension(path);
 
-        if (extension is ".css" or ".js")
-        {
-            url = path;
-        }
+        return extension is ".css" or ".js" ? path : url;
     }
 
     private static bool IsValidUrl(string url)

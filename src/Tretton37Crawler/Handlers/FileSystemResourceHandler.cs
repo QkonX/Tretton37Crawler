@@ -24,16 +24,12 @@ public class FileSystemResourceHandler : IResourceHandler
 
         if (!Path.HasExtension(relativeUrl))
         {
-            relativeUrl += ".html";
+            relativeUrl = Path.ChangeExtension(relativeUrl, ".html");
         }
 
-        var relativeFilePath = Path.GetFileName(relativeUrl);
-        var relativeDirectoryPath = Path.GetDirectoryName(relativeUrl);
-
-        relativeDirectoryPath = string.Join('_', relativeDirectoryPath!.Split(Path.GetInvalidPathChars()));
-        relativeFilePath = string.Join('_', relativeFilePath.Split(Path.GetInvalidFileNameChars()));
-
-        var finalPath = Path.Join(destinationFolderPath, relativeDirectoryPath, relativeFilePath);
+        var finalPath = Path.Join(destinationFolderPath,
+            Path.GetDirectoryName(relativeUrl)!.ReplaceInvalidDirectoryNameChars(),
+            Path.GetFileName(relativeUrl).ReplaceInvalidFileNameChars());
 
         try
         {
@@ -41,11 +37,11 @@ public class FileSystemResourceHandler : IResourceHandler
 
             await FileHelper.Save(finalPath, content);
 
-            _logger.LogInformation("Saved to disk: {path}", relativeUrl);
+            _logger.LogInformation("Saved to disk: {Path}", relativeUrl);
         }
         catch (Exception e)
         {
-            _logger.LogError("Failed to write to disk: {path} (Error: {error})", relativeUrl, e.Message);
+            _logger.LogError("Failed to write to disk: {Path} (Error: {Error})", relativeUrl, e.Message);
         }
     }
 }
