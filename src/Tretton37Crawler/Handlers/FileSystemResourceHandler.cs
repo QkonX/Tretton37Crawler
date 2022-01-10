@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Tretton37Crawler.Helpers;
 
 namespace Tretton37Crawler.Handlers;
