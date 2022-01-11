@@ -19,7 +19,7 @@ public class FileSystemResourceHandler : IResourceHandler
 
         if (relativeUrl == "/")
         {
-            relativeUrl = "index.html";
+            relativeUrl = "/index.html";
         }
 
         if (!Path.HasExtension(relativeUrl))
