@@ -92,4 +92,19 @@ public class HtmlHelperTests
         Assert.Single(result);
         Assert.Equal(expectedUrl, result.First());
     }
+
+    [Fact]
+    public void ExtractUrls_Should_Distinct_Urls()
+    {
+        // Arrange
+        const string domain = "domain.com";
+        var content = "<a href=\"/foo\">bar</a><a href=\"/foo\">bar</a><a href=\"/foo\">bar</a>".ConvertToBytes();
+
+        // Act
+        var result = HtmlHelper.ExtractUrls(domain, content).ToList();
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("/foo", result.First());
+    }
 }
