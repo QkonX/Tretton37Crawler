@@ -50,48 +50,39 @@ public class CrawlerService : ICrawlerService
         return downloadResult;
     }
 
-    private async Task<DownloadResult> DownloadRecursively(List<string> urls)
+    private async Task<DownloadResult> DownloadRecursively(IEnumerable<string> urls)
     {
         var result = new DownloadResult();
-        var fetchingTasks = new List<Task<FetchingResultModel?>>();
-
-        foreach (var url in urls)
-        {
-            var requestUri = new Uri(new Uri(_domain!), url);
-            
-            fetchingTasks.Add(_fetchingService.Fetch(requestUri));
-            _visitedUrls.TryAdd(requestUri.AbsolutePath, null);
-        }
-
+        
+        var fetchingTasks = urls.Select(url => _fetchingService.Fetch(new Uri(new Uri(_domain!), url)));
         var fetchingTaskResults = await Task.WhenAll(fetchingTasks);
 
-        var extractedUrls = new HashSet<string>();
+        var extractedUrls = new List<string>();
         var resourceHandlerTasks = new List<Task>();
 
-        foreach (var fetchingTaskResult in fetchingTaskResults)
+        foreach (var fetchingResult in fetchingTaskResults)
         {
-            if (fetchingTaskResult is null)
+            if (fetchingResult is null || _visitedUrls.ContainsKey(fetchingResult.Uri.AbsolutePath))
             {
                 continue;
             }
 
-            result.TotalUrlCount++;
-            result.TotalSize += fetchingTaskResult.Content.LongLength;
-            
+            _visitedUrls.TryAdd(fetchingResult.Uri.AbsolutePath, null);
+
             resourceHandlerTasks.Add(_resourceHandler.Process(_downloadPath!,
-                fetchingTaskResult.Uri, fetchingTaskResult.Content));
+                fetchingResult.Uri, fetchingResult.Content));
+
+            extractedUrls.AddRange(HtmlHelper.ExtractUrls(_domain!, fetchingResult.Content));
             
-            foreach (var extractUrl in HtmlHelper.ExtractUrls(_domain!, fetchingTaskResult.Content))
-            {
-                extractedUrls.Add(extractUrl);
-            }
+            result.TotalUrlCount++;
+            result.TotalSize += fetchingResult.Content.LongLength;
         }
 
-        var newUrls = extractedUrls.Except(_visitedUrls.Keys).ToList();
+        var nonVisitedUrls = extractedUrls.Except(_visitedUrls.Keys).ToList();
 
-        if (newUrls.Any())
+        if (nonVisitedUrls.Any())
         {
-            result += await DownloadRecursively(newUrls);
+            result += await DownloadRecursively(nonVisitedUrls);
         }
         
         await Task.WhenAll(resourceHandlerTasks);
