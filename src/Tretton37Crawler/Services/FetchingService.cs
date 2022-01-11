@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Tretton37Crawler.Models;
 
 namespace Tretton37Crawler.Services;
 
@@ -15,7 +16,7 @@ public class FetchingService : IFetchingService
         _logger = logger;
     }
 
-    public async Task<byte[]?> Fetch(Uri requestUri)
+    public async Task<FetchingResultModel?> Fetch(Uri requestUri)
     {
         _logger.LogInformation("Downloading is starting: {RelativeUrl}", requestUri.AbsolutePath);
 
@@ -31,7 +32,8 @@ public class FetchingService : IFetchingService
             _logger.LogInformation("Successfully downloaded: {RelativeUrl} ({Size} bytes)",
                 requestUri.AbsolutePath, responseMessage.Content.Headers.ContentLength);
 
-            return await responseMessage.Content.ReadAsByteArrayAsync();
+            return new FetchingResultModel(requestUri, 
+                await responseMessage.Content.ReadAsByteArrayAsync());
         }
         catch (Exception e)
         {

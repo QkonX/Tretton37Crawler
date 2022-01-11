@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Tretton37Crawler.Handlers;
 using Tretton37Crawler.Helpers;
+using Tretton37Crawler.Models;
 
 namespace Tretton37Crawler.Services;
 
@@ -9,6 +11,8 @@ public class CrawlerService : ICrawlerService
     private readonly IFetchingService _fetchingService;
     private readonly ILogger<CrawlerService> _logger;
     private readonly IResourceHandler _resourceHandler;
+
+    private readonly ConcurrentDictionary<string, object?> _visitedUrls;
 
     private string? _domain;
     private string? _downloadPath;
@@ -21,9 +25,11 @@ public class CrawlerService : ICrawlerService
         _fetchingService = fetchingService;
         _resourceHandler = resourceHandler;
         _logger = logger;
+
+        _visitedUrls = new ConcurrentDictionary<string, object?>();
     }
 
-    public async Task Download(string domain)
+    public async Task<DownloadResult> Download(string domain)
     {
         _domain = domain ?? throw new ArgumentNullException(nameof(domain));
 
@@ -35,33 +41,61 @@ public class CrawlerService : ICrawlerService
 
         DirectoryHelper.DeleteDirectoryIfExists(_downloadPath);
 
-        await DownloadRecursively(new HashSet<string>(), "/");
+        var downloadResult = await DownloadRecursively(new List<string> { "/" });
 
-        _logger.LogInformation("Downloading has been completed for {Domain}", domain);
+        _logger.LogInformation(
+            "Downloading has been completed for {Domain} ({TotalUrlCount} pages, {TotalSize} bytes)", 
+            domain, downloadResult.TotalUrlCount, downloadResult.TotalSize);
+
+        return downloadResult;
     }
 
-    private async Task DownloadRecursively(ISet<string> visitedUrls, string relativeUrl)
+    private async Task<DownloadResult> DownloadRecursively(List<string> urls)
     {
-        if (visitedUrls.Contains(relativeUrl))
+        var result = new DownloadResult();
+        var fetchingTasks = new List<Task<FetchingResultModel?>>();
+
+        foreach (var url in urls)
         {
-            return;
+            var requestUri = new Uri(new Uri(_domain!), url);
+            
+            fetchingTasks.Add(_fetchingService.Fetch(requestUri));
+            _visitedUrls.TryAdd(requestUri.AbsolutePath, null);
         }
 
-        var requestUri = new Uri(new Uri(_domain!), relativeUrl);
-        var content = await _fetchingService.Fetch(requestUri);
+        var fetchingTaskResults = await Task.WhenAll(fetchingTasks);
 
-        visitedUrls.Add(relativeUrl);
+        var extractedUrls = new HashSet<string>();
+        var resourceHandlerTasks = new List<Task>();
 
-        if (content is null)
+        foreach (var fetchingTaskResult in fetchingTaskResults)
         {
-            return;
+            if (fetchingTaskResult is null)
+            {
+                continue;
+            }
+
+            result.TotalUrlCount++;
+            result.TotalSize += fetchingTaskResult.Content.LongLength;
+            
+            resourceHandlerTasks.Add(_resourceHandler.Process(_downloadPath!,
+                fetchingTaskResult.Uri, fetchingTaskResult.Content));
+            
+            foreach (var extractUrl in HtmlHelper.ExtractUrls(_domain!, fetchingTaskResult.Content))
+            {
+                extractedUrls.Add(extractUrl);
+            }
         }
 
-        await _resourceHandler.Process(_downloadPath!, requestUri, content);
+        var newUrls = extractedUrls.Except(_visitedUrls.Keys).ToList();
 
-        foreach (var extractedUrl in HtmlHelper.ExtractUrls(_domain!, content))
+        if (newUrls.Any())
         {
-            await DownloadRecursively(visitedUrls, extractedUrl);
+            result += await DownloadRecursively(newUrls);
         }
+        
+        await Task.WhenAll(resourceHandlerTasks);
+
+        return result;
     }
 }

@@ -1,6 +1,8 @@
-﻿namespace Tretton37Crawler.Services;
+﻿using Tretton37Crawler.Models;
+
+namespace Tretton37Crawler.Services;
 
 public interface IFetchingService
 {
-    Task<byte[]?> Fetch(Uri requestUri);
+    Task<FetchingResultModel?> Fetch(Uri requestUri);
 }
