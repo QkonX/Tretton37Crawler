@@ -14,6 +14,7 @@ internal static class HtmlHelper
             .Where(IsValidUrl)
             .Where(x => IsInternalUrl(domain, x))
             .Select(NormalizeDirectorySeparators)
+            .Select(RemoveRelativeUrl)
             .Select(FixStartingDirectorySeparator)
             .Select(RemoveResourceFileQueryString)
             .Distinct();
