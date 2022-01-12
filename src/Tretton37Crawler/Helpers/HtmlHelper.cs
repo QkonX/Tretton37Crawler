@@ -81,7 +81,7 @@ internal static class HtmlHelper
             return currentUrl;
         }
 
-        var previousPathCount = StringHelpers.GetOccurrencesCount(currentUrl, pattern);
+        var previousPathCount = StringHelper.GetOccurrencesCount(currentUrl, pattern);
         var relativeUrlSegments = relativeUrl.TrimStart('/').Split('/');
 
         var resultSegments = relativeUrlSegments

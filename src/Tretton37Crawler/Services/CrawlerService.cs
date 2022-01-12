@@ -35,7 +35,7 @@ public class CrawlerService : ICrawlerService
 
         _downloadPath = Path.Combine(
             Directory.GetCurrentDirectory(),
-            UrlExtensions.ConvertDomainToFolderName(domain));
+            UrlHelpers.ConvertDomainToFolderName(domain));
 
         _logger.LogInformation("Downloading is starting for {Domain}", domain);
 

@@ -1,6 +1,6 @@
 namespace Tretton37Crawler.Helpers;
 
-internal static class StringHelpers
+internal static class StringHelper
 {
     public static int GetOccurrencesCount(string str, string pattern)
     {
