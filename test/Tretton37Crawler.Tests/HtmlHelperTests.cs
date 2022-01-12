@@ -14,7 +14,7 @@ public class HtmlHelperTests
         var content = "<html><body><a href=\"/foo\">bar</a></body></html>".ConvertToBytes();
 
         // Act
-        var result = HtmlHelper.ExtractUrls(domain, content).ToList();
+        var result = HtmlHelper.ExtractUrls(domain, "/", content).ToList();
 
         // Assert
         Assert.Single(result);
@@ -33,7 +33,7 @@ public class HtmlHelperTests
         var content = link.ConvertToBytes();
 
         // Act
-        var result = HtmlHelper.ExtractUrls(domain, content).ToList();
+        var result = HtmlHelper.ExtractUrls(domain, "/", content).ToList();
 
         // Assert
         Assert.Single(result);
@@ -53,7 +53,7 @@ public class HtmlHelperTests
         var content = link.ConvertToBytes();
 
         // Act
-        var result = HtmlHelper.ExtractUrls(domain, content).ToList();
+        var result = HtmlHelper.ExtractUrls(domain, "/", content).ToList();
 
         // Assert
         Assert.Empty(result);
@@ -69,7 +69,7 @@ public class HtmlHelperTests
         var content = link.ConvertToBytes();
 
         // Act
-        var result = HtmlHelper.ExtractUrls(domain, content).ToList();
+        var result = HtmlHelper.ExtractUrls(domain, "/", content).ToList();
 
         // Assert
         Assert.Single(result);
@@ -86,7 +86,7 @@ public class HtmlHelperTests
         var content = link.ConvertToBytes();
 
         // Act
-        var result = HtmlHelper.ExtractUrls(domain, content).ToList();
+        var result = HtmlHelper.ExtractUrls(domain, "/", content).ToList();
 
         // Assert
         Assert.Single(result);
@@ -101,10 +101,25 @@ public class HtmlHelperTests
         var content = "<a href=\"/foo\">bar</a><a href=\"/foo\">bar</a><a href=\"/foo\">bar</a>".ConvertToBytes();
 
         // Act
-        var result = HtmlHelper.ExtractUrls(domain, content).ToList();
+        var result = HtmlHelper.ExtractUrls(domain, "/", content).ToList();
 
         // Assert
         Assert.Single(result);
         Assert.Equal("/foo", result.First());
+    }
+
+    [Fact]
+    public void ExtractUrls_Should_AdjustRelativeUrlToCurrentUrl()
+    {
+        // Arrange
+        const string domain = "domain.com";
+        var content = "<a href=\"../../f\">b</a>".ConvertToBytes();
+
+        // Act
+        var result = HtmlHelper.ExtractUrls(domain, "/a/b/c/d/e", content).ToList();
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("/a/b/f", result.First());
     }
 }
