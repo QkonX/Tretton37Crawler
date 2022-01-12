@@ -18,7 +18,7 @@ hostBuilder.ConfigureServices((_, services) => {
         var downloadPath = Path.Combine(Directory.GetCurrentDirectory(),
             UrlHelpers.ConvertDomainToFolderName(settings["Domain"]));
 
-        return new FileSystemResourceHandler(logger, downloadPath);
+        return new FileSystemResourceHandler(logger, downloadPath, true);
     });
 
     services.AddTransient<ICrawlerService, CrawlerService>();

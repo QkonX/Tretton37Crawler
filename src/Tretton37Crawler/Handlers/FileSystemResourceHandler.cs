@@ -5,17 +5,21 @@ namespace Tretton37Crawler.Handlers;
 
 public class FileSystemResourceHandler : IResourceHandler
 {
-    private readonly ILogger<FileSystemResourceHandler> _logger;
     private readonly string _destinationFolderPath;
+    private readonly ILogger<FileSystemResourceHandler> _logger;
 
     public FileSystemResourceHandler(
-        ILogger<FileSystemResourceHandler> logger, 
-        string destinationFolderPath)
+        ILogger<FileSystemResourceHandler> logger,
+        string destinationFolderPath,
+        bool cleanupDestinationFolder = false)
     {
         _logger = logger;
         _destinationFolderPath = destinationFolderPath;
-        
-        DirectoryHelper.DeleteDirectoryIfExists(_destinationFolderPath);
+
+        if (cleanupDestinationFolder)
+        {
+            DirectoryHelper.DeleteDirectoryIfExists(_destinationFolderPath);
+        }
     }
 
     public async Task Process(string relativeUrl, byte[] content)
