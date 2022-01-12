@@ -7,7 +7,7 @@ public static class FileHelper
         await File.WriteAllBytesAsync(path, content);
     }
 
-    public static string ReplaceInvalidFileNameChars(this string fileName, char replacement = '_')
+    public static string ReplaceInvalidFileNameChars(string fileName, char replacement = '_')
     {
         return string.Join(replacement, fileName.Split(Path.GetInvalidFileNameChars()));
     }

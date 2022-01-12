@@ -26,8 +26,8 @@ public class FileSystemResourceHandler : IResourceHandler
         }
 
         var finalPath = Path.Join(destinationFolderPath,
-            Path.GetDirectoryName(relativeUrl)!.ReplaceInvalidDirectoryNameChars(),
-            Path.GetFileName(relativeUrl).ReplaceInvalidFileNameChars());
+            DirectoryHelper.ReplaceInvalidDirectoryNameChars(Path.GetDirectoryName(relativeUrl)!),
+            FileHelper.ReplaceInvalidFileNameChars(Path.GetFileName(relativeUrl)));
 
         try
         {

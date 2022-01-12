@@ -4,10 +4,7 @@ internal static class DirectoryHelper
 {
     public static void CreateDirectoryIfNotExists(string path)
     {
-        if (!Directory.Exists(path))
-        {
-            Directory.CreateDirectory(path);
-        }
+        Directory.CreateDirectory(path);
     }
 
     public static void DeleteDirectoryIfExists(string path)
@@ -18,7 +15,7 @@ internal static class DirectoryHelper
         }
     }
 
-    public static string ReplaceInvalidDirectoryNameChars(this string directoryName, char replacement = '_')
+    public static string ReplaceInvalidDirectoryNameChars(string directoryName, char replacement = '_')
     {
         return string.Join(replacement, directoryName.Split(Path.GetInvalidPathChars()));
     }
