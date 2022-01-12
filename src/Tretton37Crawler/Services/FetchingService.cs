@@ -22,7 +22,7 @@ public class FetchingService : IFetchingService
 
         try
         {
-            var requestUri = new Uri(new Uri(domain!), relativeUrl);
+            var requestUri = new Uri(new Uri(domain), relativeUrl);
             var response = await _httpClient.GetAsync(requestUri);
 
             if (!response.IsSuccessStatusCode)
@@ -33,7 +33,7 @@ public class FetchingService : IFetchingService
             _logger.LogInformation("Successfully downloaded: {RelativeUrl} ({Size} bytes)",
                 relativeUrl, response.Content.Headers.ContentLength);
 
-            return new FetchingResultModel(domain, relativeUrl, await response.Content.ReadAsByteArrayAsync());
+            return new FetchingResultModel(relativeUrl, await response.Content.ReadAsByteArrayAsync());
         }
         catch (Exception e)
         {

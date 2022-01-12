@@ -25,11 +25,11 @@ public class CrawlerServiceTests
 
         fetchingServiceMock
             .Setup(x => x.Fetch(domain, "/"))
-            .ReturnsAsync(new FetchingResultModel(domain, "/", rootContent));
+            .ReturnsAsync(new FetchingResultModel("/", rootContent));
 
         fetchingServiceMock
             .Setup(x => x.Fetch(domain, "/foo"))
-            .ReturnsAsync(new FetchingResultModel(domain, "/foo", fooPageContent));
+            .ReturnsAsync(new FetchingResultModel("/foo", fooPageContent));
 
         fetchingServiceMock
             .Setup(x => x.Fetch(domain, "/bar"))

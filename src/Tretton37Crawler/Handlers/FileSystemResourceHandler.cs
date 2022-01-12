@@ -6,7 +6,7 @@ namespace Tretton37Crawler.Handlers;
 public class FileSystemResourceHandler : IResourceHandler
 {
     private readonly ILogger<FileSystemResourceHandler> _logger;
-    private string _destinationFolderPath;
+    private readonly string _destinationFolderPath;
 
     public FileSystemResourceHandler(
         ILogger<FileSystemResourceHandler> logger, 
@@ -46,10 +46,5 @@ public class FileSystemResourceHandler : IResourceHandler
         {
             _logger.LogError("Failed to write to disk: {Path} (Error: {Error})", relativeUrl, e.Message);
         }
-    }
-
-    public void SetDestinationFolderPath(string destinationFolderPath)
-    {
-        _destinationFolderPath = destinationFolderPath;
     }
 }
