@@ -4,5 +4,5 @@ namespace Tretton37Crawler.Services;
 
 public interface IFetchingService
 {
-    Task<FetchingResultModel?> Fetch(Uri requestUri);
+    Task<FetchingResultModel?> Fetch(string domain, string relativeUrl);
 }

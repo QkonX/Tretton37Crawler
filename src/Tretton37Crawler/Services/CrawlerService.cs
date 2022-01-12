@@ -45,7 +45,7 @@ public class CrawlerService : ICrawlerService
 
         _logger.LogInformation(
             "Downloading has been completed for {Domain} ({TotalUrlCount} pages, {TotalSize} bytes)", 
-            domain, downloadResult.TotalUrlCount, downloadResult.TotalSize);
+            domain, downloadResult.TotalVisitedUrlCount, downloadResult.TotalDownloadedSizeInBytes);
 
         return downloadResult;
     }
@@ -54,7 +54,7 @@ public class CrawlerService : ICrawlerService
     {
         var result = new DownloadResult();
         
-        var fetchingTasks = urls.Select(url => _fetchingService.Fetch(new Uri(new Uri(_domain!), url)));
+        var fetchingTasks = urls.Select(url => _fetchingService.Fetch(_domain!, url));
         var fetchingTaskResults = await Task.WhenAll(fetchingTasks);
 
         var extractedUrls = new List<string>();
@@ -62,20 +62,26 @@ public class CrawlerService : ICrawlerService
 
         foreach (var fetchingResult in fetchingTaskResults)
         {
-            if (fetchingResult is null || _visitedUrls.ContainsKey(fetchingResult.Uri.AbsolutePath))
+            if (fetchingResult is null)
             {
                 continue;
             }
 
-            _visitedUrls.TryAdd(fetchingResult.Uri.AbsolutePath, null);
+            if (_visitedUrls.ContainsKey(fetchingResult.RelativeUrl))
+            {
+                continue;
+            }
+
+            _visitedUrls.TryAdd(fetchingResult.RelativeUrl, null);
 
             resourceHandlerTasks.Add(_resourceHandler.Process(_downloadPath!,
-                fetchingResult.Uri, fetchingResult.Content));
+                fetchingResult.RelativeUrl, fetchingResult.Content));
 
-            extractedUrls.AddRange(HtmlHelper.ExtractUrls(_domain!, fetchingResult.Content));
+            extractedUrls.AddRange(HtmlHelper.ExtractUrls(_domain!, 
+                fetchingResult.RelativeUrl, fetchingResult.Content));
             
-            result.TotalUrlCount++;
-            result.TotalSize += fetchingResult.Content.LongLength;
+            result.TotalVisitedUrlCount++;
+            result.TotalDownloadedSizeInBytes += fetchingResult.Content.LongLength;
         }
 
         var nonVisitedUrls = extractedUrls.Except(_visitedUrls.Keys).ToList();

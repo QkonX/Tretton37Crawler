@@ -1,3 +1,3 @@
 namespace Tretton37Crawler.Models;
 
-public record FetchingResultModel(Uri Uri, byte[] Content);
+public record FetchingResultModel(string Domain, string RelativeUrl, byte[] Content);

@@ -16,30 +16,28 @@ public class FetchingService : IFetchingService
         _logger = logger;
     }
 
-    public async Task<FetchingResultModel?> Fetch(Uri requestUri)
+    public async Task<FetchingResultModel?> Fetch(string domain, string relativeUrl)
     {
-        _logger.LogInformation("Downloading is starting: {RelativeUrl}", requestUri.AbsolutePath);
+        _logger.LogInformation("Downloading is starting: {RelativeUrl}", relativeUrl);
 
         try
         {
-            var responseMessage = await _httpClient.GetAsync(requestUri);
+            var requestUri = new Uri(new Uri(domain!), relativeUrl);
+            var response = await _httpClient.GetAsync(requestUri);
 
-            if (!responseMessage.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
                 return null;
             }
 
             _logger.LogInformation("Successfully downloaded: {RelativeUrl} ({Size} bytes)",
-                requestUri.AbsolutePath, responseMessage.Content.Headers.ContentLength);
+                relativeUrl, response.Content.Headers.ContentLength);
 
-            return new FetchingResultModel(requestUri, 
-                await responseMessage.Content.ReadAsByteArrayAsync());
+            return new FetchingResultModel(domain, relativeUrl, await response.Content.ReadAsByteArrayAsync());
         }
         catch (Exception e)
         {
-            _logger.LogError(
-                "Downloading failed: {RelativeUrl} (Error message: {Error})",
-                requestUri.AbsolutePath, e.Message);
+            _logger.LogError("Downloading failed: {RelativeUrl} (Error message: {Error})", relativeUrl, e.Message);
 
             return null;
         }

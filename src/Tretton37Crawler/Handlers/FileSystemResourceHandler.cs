@@ -13,10 +13,8 @@ public class FileSystemResourceHandler : IResourceHandler
         _logger = logger;
     }
 
-    public async Task Process(string destinationFolderPath, Uri uri, byte[] content)
+    public async Task Process(string destinationFolderPath, string relativeUrl, byte[] content)
     {
-        var relativeUrl = uri.PathAndQuery;
-
         if (relativeUrl == "/")
         {
             relativeUrl = "/index.html";
