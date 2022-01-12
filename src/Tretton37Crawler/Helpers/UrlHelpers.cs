@@ -1,6 +1,6 @@
 namespace Tretton37Crawler.Helpers;
 
-internal static class UrlHelpers
+public static class UrlHelpers
 {
     public static string ConvertDomainToFolderName(string domain)
     {

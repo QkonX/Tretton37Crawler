@@ -13,9 +13,7 @@ public class CrawlerService : ICrawlerService
     private readonly IResourceHandler _resourceHandler;
 
     private readonly ConcurrentDictionary<string, object?> _visitedUrls;
-
     private string? _domain;
-    private string? _downloadPath;
 
     public CrawlerService(
         IFetchingService fetchingService,
@@ -32,14 +30,8 @@ public class CrawlerService : ICrawlerService
     public async Task<DownloadResult> Download(string domain)
     {
         _domain = domain ?? throw new ArgumentNullException(nameof(domain));
-
-        _downloadPath = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            UrlHelpers.ConvertDomainToFolderName(domain));
-
+        
         _logger.LogInformation("Downloading is starting for {Domain}", domain);
-
-        DirectoryHelper.DeleteDirectoryIfExists(_downloadPath);
 
         var downloadResult = await DownloadRecursively(new List<string> { "/" });
 
@@ -74,7 +66,7 @@ public class CrawlerService : ICrawlerService
 
             _visitedUrls.TryAdd(fetchingResult.RelativeUrl, null);
 
-            resourceHandlerTasks.Add(_resourceHandler.Process(_downloadPath!,
+            resourceHandlerTasks.Add(_resourceHandler.Process(
                 fetchingResult.RelativeUrl, fetchingResult.Content));
 
             extractedUrls.AddRange(HtmlHelper.ExtractUrls(_domain!, 

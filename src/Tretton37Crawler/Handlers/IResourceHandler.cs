@@ -2,5 +2,5 @@
 
 public interface IResourceHandler
 {
-    Task Process(string destinationFolderPath, string relativeUrl, byte[] content);
+    Task Process(string relativeUrl, byte[] content);
 }

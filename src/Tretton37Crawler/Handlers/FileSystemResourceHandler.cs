@@ -6,14 +6,19 @@ namespace Tretton37Crawler.Handlers;
 public class FileSystemResourceHandler : IResourceHandler
 {
     private readonly ILogger<FileSystemResourceHandler> _logger;
+    private string _destinationFolderPath;
 
     public FileSystemResourceHandler(
-        ILogger<FileSystemResourceHandler> logger)
+        ILogger<FileSystemResourceHandler> logger, 
+        string destinationFolderPath)
     {
         _logger = logger;
+        _destinationFolderPath = destinationFolderPath;
+        
+        DirectoryHelper.DeleteDirectoryIfExists(_destinationFolderPath);
     }
 
-    public async Task Process(string destinationFolderPath, string relativeUrl, byte[] content)
+    public async Task Process(string relativeUrl, byte[] content)
     {
         if (relativeUrl == "/")
         {
@@ -25,7 +30,7 @@ public class FileSystemResourceHandler : IResourceHandler
             relativeUrl = Path.ChangeExtension(relativeUrl, ".html");
         }
 
-        var finalPath = Path.Join(destinationFolderPath,
+        var finalPath = Path.Join(_destinationFolderPath,
             DirectoryHelper.ReplaceInvalidDirectoryNameChars(Path.GetDirectoryName(relativeUrl)!),
             FileHelper.ReplaceInvalidFileNameChars(Path.GetFileName(relativeUrl)));
 
@@ -41,5 +46,10 @@ public class FileSystemResourceHandler : IResourceHandler
         {
             _logger.LogError("Failed to write to disk: {Path} (Error: {Error})", relativeUrl, e.Message);
         }
+    }
+
+    public void SetDestinationFolderPath(string destinationFolderPath)
+    {
+        _destinationFolderPath = destinationFolderPath;
     }
 }
