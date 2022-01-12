@@ -2,7 +2,7 @@ using System.Linq;
 using Tretton37Crawler.Helpers;
 using Xunit;
 
-namespace Tretton37Crawler.Tests;
+namespace Tretton37Crawler.Tests.HelperTests;
 
 public class HtmlHelperTests
 {
@@ -113,7 +113,7 @@ public class HtmlHelperTests
     {
         // Arrange
         const string domain = "domain.com";
-        var content = "<a href=\"../../f\">b</a>".ConvertToBytes();
+        var content = "<a href=\"/../../f\">b</a>".ConvertToBytes();
 
         // Act
         var result = HtmlHelper.ExtractUrls(domain, "/a/b/c/d/e", content).ToList();
