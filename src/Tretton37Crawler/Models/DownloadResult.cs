@@ -9,7 +9,8 @@ public class DownloadResult
     {
         return new DownloadResult
         {
-            TotalVisitedUrlCount = a.TotalVisitedUrlCount + b.TotalVisitedUrlCount, TotalDownloadedSizeInBytes = a.TotalDownloadedSizeInBytes + b.TotalDownloadedSizeInBytes
+            TotalVisitedUrlCount = a.TotalVisitedUrlCount + b.TotalVisitedUrlCount,
+            TotalDownloadedSizeInBytes = a.TotalDownloadedSizeInBytes + b.TotalDownloadedSizeInBytes
         };
     }
 }
